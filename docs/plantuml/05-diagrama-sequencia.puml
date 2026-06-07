@@ -1,5 +1,5 @@
 @startuml
-title FoodStack - Diagrama de Sequência: Fluxo Principal
+title FoodStack - Diagrama de Sequência: Sugerir e Preparar Receita
 
 skinparam shadowing false
 skinparam defaultFontName Arial
@@ -15,43 +15,66 @@ skinparam sequence {
 }
 
 actor "Usuário" as Usuario
-participant "Sistema" as Sistema
+participant "Sistema\nFoodStack" as Sistema
 database "BancoDeDados" as BancoDeDados
+participant "Serviço\nNotificação" as Notificacao
 
-Usuario -> Sistema : solicitarSugestoes(despensaID, filtros)
+Usuario -> Sistema : 1: solicitarSugestoes(despensaID, filtros)
 activate Sistema
 
-Sistema -> BancoDeDados : buscarItensDisponiveis(despensaID)
+Sistema -> BancoDeDados : 1.1: validarAcesso(usuarioID, despensaID)
 activate BancoDeDados
-BancoDeDados --> Sistema : itensDisponiveis
+BancoDeDados --> Sistema : 1.1.1: acessoAutorizado
 deactivate BancoDeDados
 
-Sistema -> BancoDeDados : buscarReceitasCandidatas(filtros)
+Sistema -> BancoDeDados : 1.2: buscarItensDisponiveis(despensaID)
 activate BancoDeDados
-BancoDeDados --> Sistema : receitasCandidatas
+BancoDeDados --> Sistema : 1.2.1: itensDisponiveis
 deactivate BancoDeDados
 
-Sistema -> Sistema : calcularCompatibilidade()
-Sistema -> Sistema : priorizarValidade()
-Sistema -> Sistema : aplicarRestricoesAlimentares()
-
-Sistema --> Usuario : exibirRanking(receitas, faltantes)
-
-Usuario -> Sistema : prepararReceita(receitaID, porcoes)
-
-Sistema -> BancoDeDados : buscarReceitaEEstoque(receitaID, despensaID)
+Sistema -> BancoDeDados : 1.3: buscarReceitasCandidatas(filtros)
 activate BancoDeDados
-BancoDeDados --> Sistema : receitaEEstoque
+BancoDeDados --> Sistema : 1.3.1: receitasCandidatas
 deactivate BancoDeDados
 
-Sistema -> Sistema : validarPermissao()
-Sistema -> Sistema : validarDisponibilidade()
+Sistema -> Sistema : 1.4: calcularCompatibilidade(receitas, itens)
+Sistema -> Sistema : 1.5: aplicarRestricoesAlimentares(filtros)
+Sistema -> Sistema : 1.6: priorizarItensProximosVencimento()
+Sistema -> Sistema : 1.7: montarJustificativa(score, faltantes)
+Sistema --> Usuario : 1.8: exibirRanking(receitas, score, faltantes)
 
-Sistema -> BancoDeDados : salvarPreparoEAtualizarEstoque()
+Usuario -> Sistema : 2: prepararReceita(receitaID, porcoes)
+
+Sistema -> BancoDeDados : 2.1: buscarReceitaEEstoque(receitaID, despensaID)
 activate BancoDeDados
-BancoDeDados --> Sistema : transacaoConfirmada
+BancoDeDados --> Sistema : 2.1.1: receitaEEstoque
 deactivate BancoDeDados
 
-Sistema --> Usuario : confirmarPreparo(estoqueAtualizado)
+Sistema -> Sistema : 2.2: validarPermissaoEdicao(usuarioID)
+Sistema -> Sistema : 2.3: calcularPlanoBaixa(receita, estoque)
+
+alt estoque suficiente
+  Sistema -> BancoDeDados : 3.1: iniciarTransacao()
+  activate BancoDeDados
+  Sistema -> BancoDeDados : 3.2: registrarPreparo(receitaID, usuarioID)
+  Sistema -> BancoDeDados : 3.3: atualizarQuantidades(planoBaixa)
+  Sistema -> BancoDeDados : 3.4: registrarHistorico(movimentos)
+  Sistema -> BancoDeDados : 3.5: confirmarTransacao()
+  BancoDeDados --> Sistema : 3.5.1: estoqueAtualizado
+  deactivate BancoDeDados
+  Sistema -> Notificacao : 3.6: publicarEventoReceitaPreparada()
+  activate Notificacao
+  Notificacao --> Sistema : 3.6.1: eventoRegistrado
+  deactivate Notificacao
+  Sistema --> Usuario : 3.7: confirmarPreparo(estoqueAtualizado)
+else estoque insuficiente
+  Sistema -> Sistema : 4.1: calcularIngredientesFaltantes()
+  Sistema -> BancoDeDados : 4.2: salvarListaCompras(faltantes)
+  activate BancoDeDados
+  BancoDeDados --> Sistema : 4.2.1: listaComprasCriada
+  deactivate BancoDeDados
+  Sistema --> Usuario : 4.3: exibirFaltantes(listaCompras)
+end
+
 deactivate Sistema
 @enduml

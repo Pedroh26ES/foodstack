@@ -1,11 +1,12 @@
 @startuml
-title FoodStack - Arquitetura de Componentes (Completa)
+title FoodStack - Diagrama de Componentes: Arquitetura AWS Planejada
 
 skinparam shadowing false
 skinparam componentStyle uml2
 skinparam packageStyle rectangle
 skinparam defaultFontName Arial
 skinparam ArrowColor Black
+skinparam linetype ortho
 skinparam component {
   BackgroundColor White
   BorderColor Black
@@ -23,85 +24,74 @@ skinparam queue {
   BorderColor Black
 }
 
-component "Portal Web\n(React)" as Portal
+top to bottom direction
 
-() "Dashboard API" as DashboardAPI
-() "Despensa API" as DespensaAPI
-() "Receitas API" as ReceitasAPI
-() "Login/Token" as LoginToken
-() "Compras API" as ComprasAPI
-() "Compartilhamento API" as CompartilhamentoAPI
-
-Portal ..> DashboardAPI
-Portal ..> DespensaAPI
-Portal ..> ReceitasAPI
-Portal ..> LoginToken
-Portal ..> ComprasAPI
-Portal ..> CompartilhamentoAPI
-
-rectangle "Backend (AWS Cloud)" as Backend {
-  component "Módulo de\nDashboard" as ModDashboard
-  component "Módulo de\nDespensa" as ModDespensa
-  component "Módulo de\nReceitas" as ModReceitas
-  component "Módulo de\nCompras" as ModCompras
-  component "Módulo de\nCompartilhamento" as ModCompart
-  component "Auth Service\n(AWS Cognito)" as Auth
+rectangle "Canais de Acesso" as Canais {
+  component "Portal Web\n(React + Vite)" as PortalWeb
+  component "App Mobile\n(futuro)" as AppMobile
 }
 
-DashboardAPI -- ModDashboard
-DespensaAPI -- ModDespensa
-ReceitasAPI -- ModReceitas
-ComprasAPI -- ModCompras
-CompartilhamentoAPI -- ModCompart
-LoginToken -- Auth
+component "API Gateway\nREST/JSON\n\nLogin/Token\nDespensa API\nReceitas API\nSugestões API\nCompras API\nFamília API\nDashboard API" as Gateway
 
-() "Msg Validade" as MsgValidade
-() "Score Receita" as ScoreReceita
-() "Lista Compras" as ListaCompras
-() "Permissões" as Permissoes
+rectangle "Backend (AWS Cloud)\nAPI Spring Boot modular" as Backend {
+  component "Auth Service\n(AWS Cognito)" as Auth
+  component "Módulo de\nDespensa" as Pantry
+  component "Módulo de\nReceitas" as Recipe
+  component "Motor de\nSugestão" as Suggestion
+  component "Módulo de\nCompras" as Shopping
+  component "Módulo de\nCompartilhamento" as Sharing
+  component "Módulo de\nNotificações" as Notification
+  component "Módulo de\nAuditoria" as Audit
+  component "Dashboard\nService" as Dashboard
+}
 
 rectangle "Infraestrutura AWS" as Infra {
-  queue "Fila de Eventos\n(Amazon SQS)" as SQS
-  component "Envio de E-mails\n(Amazon SES)" as SES
   database "PostgreSQL\n(Amazon RDS)" as RDS
-  database "Cache de Sugestões\n(Amazon ElastiCache)" as Redis
-  component "Storage de Receitas\n(Amazon S3)" as S3
+  database "Redis\n(ElastiCache)" as Redis
+  queue "Fila de Eventos\n(Amazon SQS)" as SQS
+  component "E-mail\n(Amazon SES)" as SES
+  component "Storage\n(Amazon S3)" as S3
+  component "Logs/Métricas\n(CloudWatch)" as CloudWatch
 }
 
 rectangle "Serviços Externos" as Externos {
-  component "Firebase Push" as Firebase
-  component "OpenFoodFacts API" as FoodFacts
+  component "Firebase\nCloud Messaging" as Firebase
+  component "OpenFoodFacts\nAPI" as FoodFacts
 }
 
-component "App Mobile\n(futuro)" as Mobile
-Mobile ..> DespensaAPI
-Mobile ..> ReceitasAPI
-Mobile ..> LoginToken
+PortalWeb --> Gateway : HTTPS
+AppMobile --> Gateway : HTTPS
 
-ModDespensa ..> MsgValidade : Publica
-MsgValidade --> SQS
-SQS --> SES : Envia alerta
-SQS --> Firebase : Push
+Gateway --> Backend : roteia contratos REST
 
-ModReceitas --> ScoreReceita : Calcula
-ScoreReceita --> RDS
-ScoreReceita --> Redis
+Backend --> RDS : persistência transacional
+Backend --> Redis : cache de ranking
+Backend --> SQS : eventos de domínio
+Backend --> S3 : imagens/anexos
+Backend --> CloudWatch : logs e métricas
 
-ModCompras --> ListaCompras : Gera
-ListaCompras --> RDS
+Notification --> SES : e-mail
+Notification --> Firebase : push
+Recipe ..> FoodFacts : dados nutricionais
 
-ModCompart --> Permissoes : Valida
-Permissoes --> RDS
+Suggestion ..> Pantry : estoque
+Suggestion ..> Recipe : receitas
+Shopping ..> Pantry : faltantes
+Shopping ..> Recipe : ingredientes
+Sharing ..> Auth : identidade
+Audit ..> Pantry : movimentações
 
-ModDashboard --> RDS
-ModDespensa --> RDS
-ModReceitas --> RDS
-ModReceitas --> S3 : Upload/Leitura
-ModReceitas ..> FoodFacts : Consulta dados nutricionais
-Auth --> RDS : Usuários
+legend left
+  |= Camada |= Responsabilidade |
+  | Canais | Acesso web/mobile do usuário |
+  | API Gateway | Contratos REST/JSON do sistema |
+  | Backend | Regras de negócio, sugestão, compras e auditoria |
+  | Infraestrutura | Persistência, fila, cache, storage e observabilidade |
+  | Externos | Push e consulta de dados nutricionais |
+endlegend
 
 note bottom of Backend
-  Os módulos representam componentes lógicos
-  planejados para uma futura API Spring Boot.
+  Entrega de projeto/arquitetura: os componentes representam
+  módulos planejados e contratos técnicos, sem implementação obrigatória.
 end note
 @enduml

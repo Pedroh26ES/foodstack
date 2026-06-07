@@ -4,9 +4,9 @@ title FoodStack - Diagrama de Comunicação: Gerar Lista de Compras
 skinparam shadowing false
 skinparam defaultFontName Arial
 skinparam ArrowColor Black
-skinparam linetype ortho
-skinparam nodesep 260
-skinparam ranksep 180
+skinparam linetype polyline
+skinparam nodesep 165
+skinparam ranksep 145
 skinparam object {
   BackgroundColor #FFF8CC
   BorderColor Black
@@ -16,21 +16,34 @@ object "Usuario" as Usuario
 object "SistemaFoodStack" as Sistema
 object "BancoDeDados" as Banco
 object "Receita" as Receita
+object "Despensa" as Despensa
 object "Estoque" as Estoque
 object "ListaCompras" as Lista
+object "HistoricoEstoque" as Historico
 object "Notificacao" as Notificacao
 
-Notificacao -[hidden]down- Sistema
 Usuario -[hidden]right- Sistema
 Sistema -[hidden]right- Banco
-Receita -[hidden]right- Estoque
+Notificacao -[hidden]down- Sistema
+Receita -[hidden]right- Despensa
+Despensa -[hidden]right- Estoque
 Estoque -[hidden]right- Lista
-Sistema -[hidden]down- Receita
+Lista -[hidden]right- Historico
+Sistema -[hidden]down- Estoque
 
-Usuario -right-> Sistema : 1: solicitarLista(receitaID)\n6: exibirLista(itens)
-Sistema -right-> Banco : 1.1: buscarReceita()\n1.1.1: receita()\n2.2: buscarEstoque()\n2.2.1: estoque()\n4: salvarLista()\n4.1: listaID()
-Sistema -down-> Receita : 1.2: getIngredientes()\n1.2.1: ingredientes()
-Sistema --> Estoque : 2: consultarDisponibilidade()\n2.1: itensDisponiveis()
-Sistema --> Lista : 3: calcularFaltantes()\n3.1: listaCalculada()
-Sistema -up-> Notificacao : 5: registrarEvento()\n5.1: eventoRegistrado()
+Usuario -right-> Sistema : 1: selecionarReceita(receitaID)\n2: informarPorcoes(porcoes)\n7: visualizarLista(listaID)
+
+Sistema -right-> Banco : 1.1: validarMembroDespensa(usuarioID)\n1.1.1: permissaoOK\n2.1: buscarReceitaEEstoque(receitaID)\n2.1.1: dadosParaCalculo\n5: persistirLista(lista)\n5.1: listaSalva(listaID)
+
+Sistema -down-> Receita : 2.2: obterIngredientesNecessarios()\n2.2.1: ingredientesReceita
+
+Sistema -down-> Despensa : 3: consultarItensDisponiveis()\n3.1: itensDaDespensa
+
+Sistema -down-> Estoque : 4: normalizarUnidades()\n4.1: calcularSaldoPorIngrediente()
+
+Sistema --> Lista : 4.2: calcularFaltantes()\n4.3: montarItensCompra()\n4.4: totalizarQuantidades()
+
+Sistema --> Historico : 5.2: registrarOrigemLista()\n5.2.1: historicoRegistrado
+
+Sistema -up-> Notificacao : 6: notificarListaCriada(listaID)\n6.1: notificacaoRegistrada
 @enduml
