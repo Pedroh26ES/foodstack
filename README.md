@@ -425,8 +425,10 @@ O FoodStack foi projetado como um **monólito modular orientado a domínio**, se
 
 [Código PlantUML](docs/plantuml/05-diagrama-sequencia.puml)
 
+O diagrama de sequência foi modelado no padrão dos gabaritos enviados, com cenários agrupados para **sugestão de receita**, **preparo com baixa automática**, **geração de lista de compras** e **alerta automático de vencimento**. Ele utiliza blocos `group`, `alt`, `loop`, notas explicativas e numeração manual das mensagens para evidenciar o fluxo principal e os caminhos alternativos.
+
 <p align="center">
-  <img src="docs/diagramas/05-diagrama-sequencia.png" alt="Diagrama de Sequência" width="760"/>
+  <img src="docs/diagramas/05-diagrama-sequencia.png" alt="Diagrama de Sequência" width="900"/>
 </p>
 
 ### 06 - Atividade
