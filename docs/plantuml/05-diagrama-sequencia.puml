@@ -1,0 +1,57 @@
+@startuml
+title FoodStack - Diagrama de Sequência: Fluxo Principal
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequence {
+  ArrowColor Black
+  LifeLineBorderColor Black
+  ParticipantBorderColor Black
+  ParticipantBackgroundColor #F2F2FF
+  ActorBorderColor Black
+  ActorBackgroundColor White
+  DatabaseBorderColor Black
+  DatabaseBackgroundColor White
+}
+
+actor "Usuário" as Usuario
+participant "Sistema" as Sistema
+database "BancoDeDados" as BancoDeDados
+
+Usuario -> Sistema : solicitarSugestoes(despensaID, filtros)
+activate Sistema
+
+Sistema -> BancoDeDados : buscarItensDisponiveis(despensaID)
+activate BancoDeDados
+BancoDeDados --> Sistema : itensDisponiveis
+deactivate BancoDeDados
+
+Sistema -> BancoDeDados : buscarReceitasCandidatas(filtros)
+activate BancoDeDados
+BancoDeDados --> Sistema : receitasCandidatas
+deactivate BancoDeDados
+
+Sistema -> Sistema : calcularCompatibilidade()
+Sistema -> Sistema : priorizarValidade()
+Sistema -> Sistema : aplicarRestricoesAlimentares()
+
+Sistema --> Usuario : exibirRanking(receitas, faltantes)
+
+Usuario -> Sistema : prepararReceita(receitaID, porcoes)
+
+Sistema -> BancoDeDados : buscarReceitaEEstoque(receitaID, despensaID)
+activate BancoDeDados
+BancoDeDados --> Sistema : receitaEEstoque
+deactivate BancoDeDados
+
+Sistema -> Sistema : validarPermissao()
+Sistema -> Sistema : validarDisponibilidade()
+
+Sistema -> BancoDeDados : salvarPreparoEAtualizarEstoque()
+activate BancoDeDados
+BancoDeDados --> Sistema : transacaoConfirmada
+deactivate BancoDeDados
+
+Sistema --> Usuario : confirmarPreparo(estoqueAtualizado)
+deactivate Sistema
+@enduml
