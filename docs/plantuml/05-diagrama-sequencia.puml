@@ -1,5 +1,6 @@
 @startuml
-title FoodStack - Diagrama de Sequência: Sugerir e Preparar Receita
+!theme plain
+title FoodStack - Diagrama de Sequência: Sugestão, Preparo e Lista de Compras
 
 skinparam shadowing false
 skinparam defaultFontName Arial
@@ -14,67 +15,130 @@ skinparam sequence {
   DatabaseBackgroundColor White
 }
 
-actor "Usuário" as Usuario
-participant "Sistema\nFoodStack" as Sistema
-database "BancoDeDados" as BancoDeDados
-participant "Serviço\nNotificação" as Notificacao
+actor "Usuário" as U
+participant "Sistema\nFoodStack" as SF
+database "Banco de Dados" as BD
+participant "Sistema de\nNotificação" as SN
 
-Usuario -> Sistema : 1: solicitarSugestoes(despensaID, filtros)
-activate Sistema
+group Cenário: Sugestão de Receita por Estoque
 
-Sistema -> BancoDeDados : 1.1: validarAcesso(usuarioID, despensaID)
-activate BancoDeDados
-BancoDeDados --> Sistema : 1.1.1: acessoAutorizado
-deactivate BancoDeDados
+  U -> SF: 1.1: solicitarSugestoes(despensaID, filtros)
+  activate SF
 
-Sistema -> BancoDeDados : 1.2: buscarItensDisponiveis(despensaID)
-activate BancoDeDados
-BancoDeDados --> Sistema : 1.2.1: itensDisponiveis
-deactivate BancoDeDados
+  SF -> BD: 1.2: validarAcesso(usuarioID, despensaID)
+  activate BD
+  BD --> SF: 1.3: acessoAutorizado(papel)
 
-Sistema -> BancoDeDados : 1.3: buscarReceitasCandidatas(filtros)
-activate BancoDeDados
-BancoDeDados --> Sistema : 1.3.1: receitasCandidatas
-deactivate BancoDeDados
+  SF -> BD: 1.4: buscarItensDisponiveis(despensaID)
+  BD --> SF: 1.5: itensDisponiveis(listaItens)
 
-Sistema -> Sistema : 1.4: calcularCompatibilidade(receitas, itens)
-Sistema -> Sistema : 1.5: aplicarRestricoesAlimentares(filtros)
-Sistema -> Sistema : 1.6: priorizarItensProximosVencimento()
-Sistema -> Sistema : 1.7: montarJustificativa(score, faltantes)
-Sistema --> Usuario : 1.8: exibirRanking(receitas, score, faltantes)
+  SF -> BD: 1.6: buscarReceitasCandidatas(filtros)
+  BD --> SF: 1.7: receitasCandidatas(listaReceitas)
+  deactivate BD
 
-Usuario -> Sistema : 2: prepararReceita(receitaID, porcoes)
+  SF -> SF: 1.8: calcularCompatibilidade(receitas, itens)
+  SF -> SF: 1.9: aplicarRestricoesAlimentares(filtros)
+  SF -> SF: 1.10: priorizarItensProximosVencimento()
+  SF -> SF: 1.11: montarJustificativa(score, usados, faltantes)
 
-Sistema -> BancoDeDados : 2.1: buscarReceitaEEstoque(receitaID, despensaID)
-activate BancoDeDados
-BancoDeDados --> Sistema : 2.1.1: receitaEEstoque
-deactivate BancoDeDados
+  alt Receitas compatíveis encontradas
+    SF --> U: 1.12: exibirRanking(receitas, score, justificativa)
+  else Nenhuma receita compatível
+    SF --> U: 1.12alt: informarAusenciaDeSugestoes()
+  end
 
-Sistema -> Sistema : 2.2: validarPermissaoEdicao(usuarioID)
-Sistema -> Sistema : 2.3: calcularPlanoBaixa(receita, estoque)
-
-alt estoque suficiente
-  Sistema -> BancoDeDados : 3.1: iniciarTransacao()
-  activate BancoDeDados
-  Sistema -> BancoDeDados : 3.2: registrarPreparo(receitaID, usuarioID)
-  Sistema -> BancoDeDados : 3.3: atualizarQuantidades(planoBaixa)
-  Sistema -> BancoDeDados : 3.4: registrarHistorico(movimentos)
-  Sistema -> BancoDeDados : 3.5: confirmarTransacao()
-  BancoDeDados --> Sistema : 3.5.1: estoqueAtualizado
-  deactivate BancoDeDados
-  Sistema -> Notificacao : 3.6: publicarEventoReceitaPreparada()
-  activate Notificacao
-  Notificacao --> Sistema : 3.6.1: eventoRegistrado
-  deactivate Notificacao
-  Sistema --> Usuario : 3.7: confirmarPreparo(estoqueAtualizado)
-else estoque insuficiente
-  Sistema -> Sistema : 4.1: calcularIngredientesFaltantes()
-  Sistema -> BancoDeDados : 4.2: salvarListaCompras(faltantes)
-  activate BancoDeDados
-  BancoDeDados --> Sistema : 4.2.1: listaComprasCriada
-  deactivate BancoDeDados
-  Sistema --> Usuario : 4.3: exibirFaltantes(listaCompras)
+  deactivate SF
 end
 
-deactivate Sistema
+group Cenário: Preparo de Receita e Baixa Automática
+
+  U -> SF: 2.1: prepararReceita(receitaID, porcoes)
+  activate SF
+
+  SF -> BD: 2.2: buscarReceitaEEstoque(receitaID, despensaID)
+  activate BD
+  BD --> SF: 2.3: receitaEEstoque(detalhes, saldos)
+  deactivate BD
+
+  SF -> SF: 2.4: validarPermissaoEdicao(usuarioID)
+  SF -> SF: 2.5: calcularPlanoBaixa(receita, estoque, porcoes)
+
+  alt Estoque suficiente
+    SF -> BD: 2.6: iniciarTransacao()
+    activate BD
+    SF -> BD: 2.7: registrarPreparo(receitaID, usuarioID, porcoes)
+    SF -> BD: 2.8: atualizarQuantidades(planoBaixa)
+    SF -> BD: 2.9: registrarHistoricoEstoque(movimentos)
+    SF -> BD: 2.10: confirmarTransacao()
+    BD --> SF: 2.11: estoqueAtualizado
+    deactivate BD
+
+    SF -> SN: 2.12: publicarEventoReceitaPreparada(usuarioID, receitaID)
+    activate SN
+    SN --> U: 2.13: confirmacaoPreparo(estoqueAtualizado)
+    deactivate SN
+
+    SF --> U: 2.14: preparoConcluido(detalhes)
+
+  else Estoque insuficiente
+    SF -> SF: 2.6alt: calcularIngredientesFaltantes()
+    SF --> U: 2.7alt: informarEstoqueInsuficiente(faltantes)
+  end
+
+  deactivate SF
+end
+
+group Cenário: Geração de Lista de Compras
+
+  U -> SF: 3.1: gerarListaCompras(receitaID, despensaID)
+  activate SF
+
+  SF -> BD: 3.2: buscarReceitaEItensDaDespensa(receitaID, despensaID)
+  activate BD
+  BD --> SF: 3.3: dadosParaCalculo(ingredientes, estoque)
+  deactivate BD
+
+  SF -> SF: 3.4: calcularFaltantes(ingredientes, estoque)
+
+  alt Existem ingredientes faltantes
+    SF -> BD: 3.5: salvarListaCompras(usuarioID, receitaID, faltantes)
+    activate BD
+    BD --> SF: 3.6: listaCriada(listaID)
+    deactivate BD
+
+    SF -> SN: 3.7: notificarListaCriada(usuarioID, listaID)
+    activate SN
+    SN --> U: 3.8: notificacaoListaCompras(listaID)
+    deactivate SN
+
+    SF --> U: 3.9: exibirListaCompras(listaID, itens)
+
+  else Nenhum ingrediente faltante
+    SF --> U: 3.5alt: informarReceitaDisponivelSemCompra(receitaID)
+  end
+
+  deactivate SF
+end
+
+group Cenário: Alerta Automático de Vencimento
+
+  note over SF, SN: Rotina diária planejada para executar às 08:00\ne notificar itens próximos da validade.
+
+  loop Diariamente
+    SF -> BD: 4.1: consultarItensProximosVencimento(dataAtual)
+    activate BD
+    BD --> SF: 4.2: itensProximosVencimento(listaItens)
+    deactivate BD
+
+    alt Existem itens próximos do vencimento
+      SF -> SN: 4.3: enviarAlertasVencimento(usuarios, itens)
+      activate SN
+      SN --> U: 4.4: alertaVencimento(itens, diasRestantes)
+      deactivate SN
+    else Nenhum item crítico
+      SF -> SF: 4.3alt: registrarRotinaSemAlerta()
+    end
+  end
+end
+
 @enduml
