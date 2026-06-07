@@ -6,30 +6,7 @@
 
 > **Despensa virtual e motor de recomendação de receitas** baseado em estoque doméstico, validade de alimentos, restrições alimentares e compartilhamento familiar.
 
-<p align="center">
-  <img src="assets/logo-foodstack.svg" alt="Logo FoodStack" width="170"/>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/status-projeto%20arquitetural-0B2545?style=for-the-badge" alt="Status"/>
-  <img src="https://img.shields.io/badge/vers%C3%A3o-1.0.0-2A9D8F?style=for-the-badge" alt="Versão"/>
-  <img src="https://img.shields.io/badge/PlantUML-obrigat%C3%B3rio-E76F51?style=for-the-badge" alt="PlantUML"/>
-  <img src="https://img.shields.io/badge/README-documenta%C3%A7%C3%A3o%20%C3%BAnica-E9C46A?style=for-the-badge" alt="README único"/>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=111827" alt="React"/>
-  <img src="https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.4-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot"/>
-  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
-  <img src="https://img.shields.io/badge/AWS-arquitetura%20planejada-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white" alt="AWS"/>
-</p>
-
 <h2 align="center">➡️ <a href="#galeria-de-diagramas">VER GALERIA DE DIAGRAMAS UML</a> ⬅️</h2>
-
-<p align="center">
-  <strong>Entrega enxuta:</strong> 1 README técnico + 1 diagrama por tipo + código PlantUML versionado.
-</p>
 
 ---
 
