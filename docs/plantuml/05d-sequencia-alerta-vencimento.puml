@@ -1,0 +1,55 @@
+﻿@startuml
+!theme plain
+title FoodStack - Diagrama de Sequencia 05d\nAlerta Automatico de Vencimento (UC-03)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequence {
+  ArrowColor Black
+  LifeLineBorderColor Black
+  ParticipantBorderColor Black
+  ParticipantBackgroundColor #F2F2FF
+  ActorBorderColor Black
+  ActorBackgroundColor White
+  DatabaseBorderColor Black
+  DatabaseBackgroundColor White
+}
+
+actor "Usuario" as U
+participant "Agendador\nDiario" as AG
+participant "Sistema\nFoodStack" as SF
+database "Banco de\nDados" as BD
+participant "Servico de\nNotificacao" as SN
+
+note over AG, SF
+Rotina planejada para execucao diaria as 08:00.
+Itens com validade em ate 5 dias entram em prioridade.
+end note
+
+loop diariamente
+  AG -> SF: 1: executarRotinaVencimento(dataAtual)
+  activate SF
+
+  SF -> BD: 1.1: consultarItensProximosVencimento(dataAtual)
+  activate BD
+  BD --> SF: 1.1.1: itensProximosVencimento(listaItens)
+  deactivate BD
+
+  alt existem itens proximos do vencimento
+    SF -> BD: 1.2: registrarNotificacoesPendentes(usuarios, itens)
+    activate BD
+    BD --> SF: 1.2.1: notificacoesRegistradas
+    deactivate BD
+
+    SF -> SN: 1.3: enviarAlertasVencimento(usuarios, itens)
+    activate SN
+    SN --> U: 1.3.1: alertaVencimento(itens, diasRestantes)
+    SN --> SF: 1.3.2: envioConfirmado
+    deactivate SN
+  else nenhum item critico
+    SF -> SF: 1.2a: registrarRotinaSemAlerta()
+  end
+
+  deactivate SF
+end
+@enduml

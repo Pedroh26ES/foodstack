@@ -1,0 +1,62 @@
+﻿@startuml
+!theme plain
+title FoodStack - Diagrama de Sequencia 05c\nGeracao de Lista de Compras (UC-12)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequence {
+  ArrowColor Black
+  LifeLineBorderColor Black
+  ParticipantBorderColor Black
+  ParticipantBackgroundColor #F2F2FF
+  ActorBorderColor Black
+  ActorBackgroundColor White
+  DatabaseBorderColor Black
+  DatabaseBackgroundColor White
+}
+
+actor "Usuario" as U
+participant "Portal Web" as PW
+participant "Sistema\nFoodStack" as SF
+database "Banco de\nDados" as BD
+participant "Servico de\nNotificacao" as SN
+
+U -> PW: 1: gerarListaCompras(receitaID, despensaID, porcoes)
+activate PW
+PW -> SF: 1.1: POST /despensas/{id}/listas-compras
+activate SF
+
+SF -> BD: 1.2: validarAcesso(usuarioID, despensaID)
+activate BD
+BD --> SF: 1.2.1: acessoAutorizado(papel)
+
+SF -> BD: 1.3: buscarReceitaEItensDaDespensa(receitaID, despensaID)
+BD --> SF: 1.3.1: dadosParaCalculo(ingredientes, estoque)
+deactivate BD
+
+SF -> SF: 1.4: normalizarUnidadesDeMedida()
+SF -> SF: 1.5: calcularFaltantes(ingredientes, estoque, porcoes)
+
+alt existem ingredientes faltantes
+  SF -> BD: 1.6: salvarListaCompras(usuarioID, receitaID, faltantes)
+  activate BD
+  BD --> SF: 1.6.1: listaCriada(listaID)
+  SF -> BD: 1.7: registrarHistoricoOrigem(listaID, receitaID)
+  BD --> SF: 1.7.1: historicoRegistrado
+  deactivate BD
+
+  SF -> SN: 1.8: notificarListaCriada(usuarioID, listaID)
+  activate SN
+  SN --> SF: 1.8.1: notificacaoRegistrada
+  deactivate SN
+
+  SF --> PW: 1.9: listaComprasCriada(listaID, itens)
+  PW --> U: 1.10: exibirListaCompras(listaID, itens)
+else receita disponivel sem compra
+  SF --> PW: 1.6a: receitaDisponivelSemCompra(receitaID)
+  PW --> U: 1.7a: informarQueNaoHaFaltantes()
+end
+
+deactivate SF
+deactivate PW
+@enduml

@@ -1,0 +1,59 @@
+﻿@startuml
+!theme plain
+title FoodStack - Diagrama de Sequencia 05a\nSugestao de Receitas por Estoque (UC-07, UC-08, UC-10)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequence {
+  ArrowColor Black
+  LifeLineBorderColor Black
+  ParticipantBorderColor Black
+  ParticipantBackgroundColor #F2F2FF
+  ActorBorderColor Black
+  ActorBackgroundColor White
+  DatabaseBorderColor Black
+  DatabaseBackgroundColor White
+}
+
+actor "Usuario" as U
+participant "Portal Web" as PW
+participant "Sistema\nFoodStack" as SF
+database "Banco de\nDados" as BD
+participant "Motor de\nRecomendacao" as MR
+
+U -> PW: 1: solicitarSugestoes(despensaID, filtros)
+activate PW
+PW -> SF: 1.1: GET /despensas/{id}/sugestoes
+activate SF
+
+SF -> BD: 1.2: validarAcesso(usuarioID, despensaID)
+activate BD
+BD --> SF: 1.2.1: acessoAutorizado(papel)
+
+SF -> BD: 1.3: buscarItensDisponiveis(despensaID)
+BD --> SF: 1.3.1: itensDisponiveis(listaItens)
+
+SF -> BD: 1.4: buscarReceitasCandidatas(filtros)
+BD --> SF: 1.4.1: receitasCandidatas(listaReceitas)
+deactivate BD
+
+SF -> MR: 1.5: calcularCompatibilidade(receitas, itens)
+activate MR
+MR -> MR: 1.5.1: normalizarUnidadesMedida()
+MR -> MR: 1.5.2: aplicarRestricoesAlimentares(filtros)
+MR -> MR: 1.5.3: priorizarItensProximosVencimento()
+MR -> MR: 1.5.4: montarJustificativa(usados, faltantes, prioridade)
+MR --> SF: 1.6: rankingReceitas(score, justificativa)
+deactivate MR
+
+alt receitas compativeis encontradas
+  SF --> PW: 1.7: resultadoSugestoes(ranking)
+  PW --> U: 1.8: exibirRanking(score, usados, faltantes)
+else nenhuma receita compativel
+  SF --> PW: 1.7a: ausenciaSugestoes(motivo)
+  PW --> U: 1.8a: informarAusenciaDeSugestoes()
+end
+
+deactivate SF
+deactivate PW
+@enduml

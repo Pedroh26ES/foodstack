@@ -43,26 +43,26 @@ Este repositório contém o **projeto técnico e arquitetural** do FoodStack. A 
 
 ### 📎 Decisão de organização dos diagramas
 
-Para evitar duplicidade e deixar a entrega mais objetiva, foi adotado o padrão:
+Para atender ao template de documentação e manter a entrega objetiva, foi adotado o padrão:
 
-> **1 diagrama por tipo.**
+> **1 diagrama para cada tipo principal + 4 diagramas de sequência separados por fluxo.**
 
-Assim, o projeto possui exatamente **9 diagramas UML/arquiteturais**:
+A separação dos diagramas de sequência foi feita porque o template `.docx` solicita sequência de **pelo menos 3 casos de uso ou histórias de usuário**. O FoodStack documenta 4 fluxos sequenciais, cobrindo os cenários mais importantes do sistema:
 
-| Tipo | Quantidade |
-|---|---:|
-| Casos de uso | 1 |
-| Componentes | 1 |
-| Classes | 1 |
-| Modelo de dados / DER | 1 |
-| Sequência | 1 |
-| Atividade | 1 |
-| Transição de Estados | 1 |
-| Comunicação | 1 |
-| Implantação | 1 |
+| Tipo | Quantidade | Observação |
+|---|---:|---|
+| Casos de uso | 1 | Visão geral dos atores e funcionalidades. |
+| Componentes | 1 | Arquitetura lógica e integrações planejadas. |
+| Classes | 1 | Estrutura do domínio. |
+| Modelo de dados / DER | 1 | Persistência relacional planejada. |
+| Sequência | 4 | Sugestão de receitas, preparo/baixa, lista de compras e alerta de vencimento. |
+| Atividade | 1 | Rotina de alerta de vencimento. |
+| Transição de Estados | 1 | Ciclo de vida do item da despensa. |
+| Comunicação | 1 | Troca de mensagens para lista de compras. |
+| Implantação | 1 | Infraestrutura planejada em nuvem. |
+| **Total** | **12** | **Todos com código PlantUML versionado e PNG renderizado.** |
 
 ---
-
 <a id="problema-solucao"></a>
 
 ## 🖼️ Problema x Solução
@@ -378,8 +378,10 @@ O FoodStack foi projetado como um **monólito modular orientado a domínio**, se
 ## 🧭 Infográfico dos diagramas
 
 <p align="center">
-  <img src="assets/readme/todos_diagramas.png" alt="Infográfico dos 9 diagramas UML e arquiteturais do FoodStack" width="100%"/>
+  <img src="assets/readme/todos_diagramas.png" alt="Infográfico dos tipos de diagramas UML e arquiteturais do FoodStack" width="100%"/>
 </p>
+
+> O infográfico apresenta os **9 tipos de modelagem** usados no projeto. Na galeria, o tipo **Sequência** foi detalhado em 4 diagramas separados para cumprir o template do trabalho com mais clareza.
 
 ---
 
@@ -387,7 +389,7 @@ O FoodStack foi projetado como um **monólito modular orientado a domínio**, se
 
 ## 🖼️ Galeria de diagramas UML
 
-> Cada imagem abaixo foi gerada a partir do respectivo arquivo PlantUML. O repositório mantém **um diagrama por tipo**, sem duplicidade.
+> Cada imagem abaixo foi gerada a partir do respectivo arquivo PlantUML. O repositório mantém **um diagrama por tipo principal** e detalha os fluxos de sequência em **4 diagramas separados**, atendendo ao template do trabalho.
 
 ### 01 - Casos de uso
 
@@ -423,14 +425,39 @@ O FoodStack foi projetado como um **monólito modular orientado a domínio**, se
 
 ### 05 - Sequência
 
-[Código PlantUML](docs/plantuml/05-diagrama-sequencia.puml)
+> O template `.docx` solicita diagramas de sequência para pelo menos 3 casos de uso ou histórias. Por isso, o fluxo sequencial foi dividido em 4 diagramas, cada um com um cenário de negócio completo.
 
-O diagrama de sequência foi modelado no padrão dos gabaritos enviados, com cenários agrupados para **sugestão de receita**, **preparo com baixa automática**, **geração de lista de compras** e **alerta automático de vencimento**. Ele utiliza blocos `group`, `alt`, `loop`, notas explicativas e numeração manual das mensagens para evidenciar o fluxo principal e os caminhos alternativos.
+#### 05a - Sugestão de receitas por estoque
+
+[Código PlantUML](docs/plantuml/05a-sequencia-sugestao-receitas.puml)
 
 <p align="center">
-  <img src="docs/diagramas/05-diagrama-sequencia.png" alt="Diagrama de Sequência" width="900"/>
+  <img src="docs/diagramas/05a-sequencia-sugestao-receitas.png" alt="Diagrama de Sequência - Sugestão de Receitas" width="900"/>
 </p>
 
+#### 05b - Preparo de receita e baixa automática
+
+[Código PlantUML](docs/plantuml/05b-sequencia-preparo-baixa-estoque.puml)
+
+<p align="center">
+  <img src="docs/diagramas/05b-sequencia-preparo-baixa-estoque.png" alt="Diagrama de Sequência - Preparo e Baixa de Estoque" width="900"/>
+</p>
+
+#### 05c - Geração de lista de compras
+
+[Código PlantUML](docs/plantuml/05c-sequencia-lista-compras.puml)
+
+<p align="center">
+  <img src="docs/diagramas/05c-sequencia-lista-compras.png" alt="Diagrama de Sequência - Lista de Compras" width="900"/>
+</p>
+
+#### 05d - Alerta automático de vencimento
+
+[Código PlantUML](docs/plantuml/05d-sequencia-alerta-vencimento.puml)
+
+<p align="center">
+  <img src="docs/diagramas/05d-sequencia-alerta-vencimento.png" alt="Diagrama de Sequência - Alerta de Vencimento" width="900"/>
+</p>
 ### 06 - Atividade
 
 [Código PlantUML](docs/plantuml/06-diagrama-atividade-alerta-vencimento.puml)
@@ -473,7 +500,10 @@ O diagrama de sequência foi modelado no padrão dos gabaritos enviados, com cen
 | [`02-diagrama-componentes.puml`](docs/plantuml/02-diagrama-componentes.puml) | Componentes |
 | [`03-diagrama-classes.puml`](docs/plantuml/03-diagrama-classes.puml) | Classes |
 | [`04-modelo-dados-der.puml`](docs/plantuml/04-modelo-dados-der.puml) | Modelo de dados |
-| [`05-diagrama-sequencia.puml`](docs/plantuml/05-diagrama-sequencia.puml) | Sequência |
+| [`05a-sequencia-sugestao-receitas.puml`](docs/plantuml/05a-sequencia-sugestao-receitas.puml) | Sequência - sugestão de receitas |
+| [`05b-sequencia-preparo-baixa-estoque.puml`](docs/plantuml/05b-sequencia-preparo-baixa-estoque.puml) | Sequência - preparo e baixa automática |
+| [`05c-sequencia-lista-compras.puml`](docs/plantuml/05c-sequencia-lista-compras.puml) | Sequência - lista de compras |
+| [`05d-sequencia-alerta-vencimento.puml`](docs/plantuml/05d-sequencia-alerta-vencimento.puml) | Sequência - alerta de vencimento |
 | [`06-diagrama-atividade-alerta-vencimento.puml`](docs/plantuml/06-diagrama-atividade-alerta-vencimento.puml) | Atividade |
 | [`07-diagrama-estados-item-despensa.puml`](docs/plantuml/07-diagrama-estados-item-despensa.puml) | Transição de Estados |
 | [`08-diagrama-comunicacao-lista-compras.puml`](docs/plantuml/08-diagrama-comunicacao-lista-compras.puml) | Comunicação |
@@ -493,16 +523,16 @@ java -jar plantuml.jar -tpng docs/plantuml/*.puml -o ../diagramas
 |---|---|---|---|---|
 | US-01 | RF-01 | RN-01 | UC-01 | 01, 03 |
 | US-02 | RF-02 | RN-02, RN-03 | UC-02 | 01, 07 |
-| US-03 | RF-03 | RN-03 | UC-03 | 06 |
+| US-03 | RF-03 | RN-03 | UC-03 | 05d, 06 |
 | US-04 | RF-04 | RN-05 | UC-04 | 01, 04 |
 | US-05 | RF-05 | RN-01 | UC-05 | 03 |
 | US-06 | RF-06 | RN-06 | UC-06 | 03, 07 |
-| US-07 | RF-07 | RN-07 | UC-07 | 05 |
-| US-08 | RF-08 | RN-08 | UC-08 | 05, 06 |
-| US-09 | RF-09 | RN-10, RN-11 | UC-09 | 05, 07 |
-| US-10 | RF-10 | RN-09 | UC-10 | 05 |
+| US-07 | RF-07 | RN-07 | UC-07 | 05a |
+| US-08 | RF-08 | RN-08 | UC-08 | 05a, 06 |
+| US-09 | RF-09 | RN-10, RN-11 | UC-09 | 05b, 07 |
+| US-10 | RF-10 | RN-09 | UC-10 | 05a |
 | US-11 | RF-11 | - | UC-11 | 03 |
-| US-12 | RF-12 | RN-13 | UC-12 | 08 |
+| US-12 | RF-12 | RN-13 | UC-12 | 05c, 08 |
 | US-13 | RF-13 | - | UC-13 | 03, 04 |
 | US-14 | RF-14 | RN-14, RN-15 | UC-14 | 01, 02 |
 
@@ -533,7 +563,10 @@ foodstack/
     │   ├── 02-diagrama-componentes.png
     │   ├── 03-diagrama-classes.png
     │   ├── 04-modelo-dados-der.png
-    │   ├── 05-diagrama-sequencia.png
+    │   ├── 05a-sequencia-sugestao-receitas.png
+    │   ├── 05b-sequencia-preparo-baixa-estoque.png
+    │   ├── 05c-sequencia-lista-compras.png
+    │   ├── 05d-sequencia-alerta-vencimento.png
     │   ├── 06-diagrama-atividade-alerta-vencimento.png
     │   ├── 07-diagrama-estados-item-despensa.png
     │   ├── 08-diagrama-comunicacao-lista-compras.png
@@ -543,7 +576,10 @@ foodstack/
         ├── 02-diagrama-componentes.puml
         ├── 03-diagrama-classes.puml
         ├── 04-modelo-dados-der.puml
-        ├── 05-diagrama-sequencia.puml
+        ├── 05a-sequencia-sugestao-receitas.puml
+        ├── 05b-sequencia-preparo-baixa-estoque.puml
+        ├── 05c-sequencia-lista-compras.puml
+        ├── 05d-sequencia-alerta-vencimento.puml
         ├── 06-diagrama-atividade-alerta-vencimento.puml
         ├── 07-diagrama-estados-item-despensa.puml
         ├── 08-diagrama-comunicacao-lista-compras.puml
@@ -557,9 +593,9 @@ foodstack/
 | Verificação | Resultado |
 |---|---|
 | README único com especificação completa | OK |
-| Um diagrama por tipo | OK |
-| 9 arquivos `.puml` versionados | OK |
-| 9 imagens `.png` renderizadas no README | OK |
+| Um diagrama por tipo principal e 4 sequências detalhadas | OK |
+| 12 arquivos `.puml` versionados | OK |
+| 12 imagens `.png` renderizadas no README | OK |
 | 6 imagens visuais de apoio no README | OK |
 | PlantUML renderiza sem erro de sintaxe | OK |
 | Código de aplicação ausente | OK |
@@ -586,7 +622,7 @@ foodstack/
 | Projeto | FoodStack |
 | Tema | Despensa virtual e gerador inteligente de receitas |
 | Tipo | Projeto técnico, documentação, arquitetura e diagramas |
-| Entrega | README único + PlantUML + imagens renderizadas |
+| Entrega | README único + PlantUML + imagens renderizadas, com sequências divididas por fluxo |
 | Versão | 1.0.0 |
 | Data | 07/06/2026 |
 

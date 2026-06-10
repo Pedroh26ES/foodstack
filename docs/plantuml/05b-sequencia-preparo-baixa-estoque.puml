@@ -1,0 +1,68 @@
+﻿@startuml
+!theme plain
+title FoodStack - Diagrama de Sequencia 05b\nPreparo de Receita e Baixa Automatica de Estoque (UC-09)
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequence {
+  ArrowColor Black
+  LifeLineBorderColor Black
+  ParticipantBorderColor Black
+  ParticipantBackgroundColor #F2F2FF
+  ActorBorderColor Black
+  ActorBackgroundColor White
+  DatabaseBorderColor Black
+  DatabaseBackgroundColor White
+}
+
+autonumber "<b>0.0</b>"
+actor "Usuario" as U
+participant "Portal Web" as PW
+participant "Sistema\nFoodStack" as SF
+database "Banco de\nDados" as BD
+queue "Fila de Eventos" as FE
+participant "Sistema de\nNotificacao" as SN
+
+U -> PW: prepararReceita(receitaID, porcoes)
+activate PW
+PW -> SF: POST /receitas/{id}/preparos
+activate SF
+
+SF -> BD: buscarReceitaEEstoque(receitaID, despensaID)
+activate BD
+BD --> SF: receitaEEstoque(detalhes, saldos)
+deactivate BD
+
+SF -> SF: validarPermissaoEdicao(usuarioID)
+SF -> SF: calcularPlanoBaixa(receita, estoque, porcoes)
+
+alt estoque suficiente
+  SF -> BD: iniciarTransacao()
+  activate BD
+  SF -> BD: registrarPreparo(receitaID, usuarioID, porcoes)
+  SF -> BD: atualizarQuantidades(planoBaixa)
+  SF -> BD: registrarHistoricoEstoque(movimentos)
+  SF -> BD: confirmarTransacao()
+  BD --> SF: estoqueAtualizado
+  deactivate BD
+
+  SF -> FE: publicarReceitaPreparada(usuarioID, receitaID)
+  activate FE
+  FE --> SN: eventoReceitaPreparada
+  deactivate FE
+
+  activate SN
+  SN --> U: confirmacaoPreparo(estoqueAtualizado)
+  deactivate SN
+
+  SF --> PW: preparoConcluido(detalhes)
+  PW --> U: exibirPreparoConcluido()
+else estoque insuficiente
+  SF -> SF: calcularIngredientesFaltantes()
+  SF --> PW: estoqueInsuficiente(faltantes)
+  PW --> U: exibirFaltantesParaCompra()
+end
+
+deactivate SF
+deactivate PW
+@enduml
